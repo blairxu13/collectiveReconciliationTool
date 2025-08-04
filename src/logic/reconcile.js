@@ -1,48 +1,37 @@
-// Input: array of transaction objects [{date, amount}], sorted chronologically
-// Input: array of bank records [{date, balance}], sorted chronologically
 export function reconcile(transactions, bankData) {
-  const mismatches = [];
-  let verifiedUntil = null;
-  const dailyTxMap = {}; // holds grouped transactions by date
+  const fullReport = [];
+  const dailyTxMap = {};
 
-  // group transactions by day, some dates may have multiple
-  for (const entry of transactions) {
-    const { date, amount } = entry;
-    if (!dailyTxMap[date]) {
-      dailyTxMap[date] = [];
-    }
+  // Group transactions by day
+  for (const { date, amount } of transactions) {
+    if (!dailyTxMap[date]) dailyTxMap[date] = [];
     dailyTxMap[date].push(amount);
   }
 
-  // use bank statement as the single source of truth
+  // Go through bankData starting from index 1
   for (let i = 1; i < bankData.length; i++) {
     const currentDay = bankData[i];
     const dayBefore = bankData[i - 1];
     const date = currentDay.date;
     const balanceBefore = dayBefore.balance;
 
-    const todaysActivity = dailyTxMap[date] || []; // if nothing happened today, default to empty
-    const todayTotal = todaysActivity.reduce((acc, val) => acc + val, 0);
+    const todaysTx = dailyTxMap[date] || [];
+    const totalTx = todaysTx.reduce((a, b) => a + b, 0);
+    const predicted = Math.round((balanceBefore + totalTx) * 100) / 100;
+    const actual = currentDay.balance;
+    const difference = Math.round((actual - predicted) * 100) / 100;
 
-    const predicted = Math.round((balanceBefore + todayTotal) * 100) / 100;
-    const bankReported = currentDay.balance;
-
-    // if what we expect != what bank says, flag it
-    if (predicted !== bankReported) {
-      mismatches.push({
-        date,
-        expected: predicted,
-        actual: bankReported,
-        difference: Math.round((bankReported - predicted) * 100) / 100
-      });
-      break;
-    } else {
-      verifiedUntil = date; // today's transaction looks right
-    }
+    fullReport.push({
+      date,
+      expected: predicted,
+      actual,
+      difference,
+      matched: predicted === actual
+    });
   }
 
   return {
-    verifiedUntil,
-    mismatches
+    verifiedUntil: bankData.at(-1)?.date || null,
+    report: fullReport
   };
 }
