@@ -1,3 +1,5 @@
+// Input: array of transaction objects [{date, amount}], sorted chronologically
+// Input: array of bank records [{date, balance}], sorted chronologically
 export function reconcile(transactions, bankData) {
   const mismatches = [];
   let verifiedUntil = null;
