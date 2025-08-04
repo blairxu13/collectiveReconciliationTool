@@ -32,7 +32,7 @@ If anything's off, it flags the first mismatch and stops there.
 - For each day:
   - Added that day’s total transactions to the previous day's balance
   - Compared the result to what the bank says
-- If there’s a mismatch, I flag it and stop verifying the rest
+- If there’s a mismatch, I flag it 
 
 ---
 
@@ -40,7 +40,6 @@ If anything's off, it flags the first mismatch and stops there.
 
 - Multiple transactions in one day
 - Days with no transactions (carry forward the previous balance)
-- Stops checking after the first mismatch (realistic reconciliation behavior)
 - If there are fewer transaction days than bank entries, verification stops at the last matching day
 
 ---
